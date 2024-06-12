@@ -29,7 +29,7 @@ class Anime
     public function NewAnime()
     {
         try {
-            $sql = "INSERT INTO `anime`(`name`, `yearOfRelease`, `genre`, `type`, `numberOfEpisodes`, `rating`, `description`, `image`) VALUES (?,?,?,?,?,?,?,?)";
+            $sql = "INSERT INTO `anime`(`name`, `yearOfRelease`, `genre`, `type`, `numberOfEpisodes`, `rating`, `description`) VALUES (?,?,?,?,?,?,?)";
             $stmt = $this->conn->prepare($sql);
             $stmt->bindParam(1, $this->name);
             $stmt->bindParam(2, $this->yearOfRelease);
@@ -38,9 +38,16 @@ class Anime
             $stmt->bindParam(5, $this->numberOfEpisodes);
             $stmt->bindParam(6, $this->rating);
             $stmt->bindParam(7, $this->description);
-            $stmt->bindParam(8, $this->image);
-            $success = $stmt->execute();
-            return $success ? true : false;
+            $stmt->execute();
+            $animeId = $this->conn->lastInsertId();
+            foreach ($this->image as $image) {
+                $sql = "INSERT INTO `img_anime`(`path`, `id_img`) VALUES (?,?)";
+                $stmt = $this->conn->prepare($sql);
+                $stmt->bindParam(1, $image);
+                $stmt->bindParam(2, $animeId);
+                $stmt->execute();
+            }
+            return true;
         } catch (PDOException $e) {
             error_log("Ошибка при выполнении запроса: " . $e->getMessage());
             return false;
